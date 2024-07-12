@@ -5,6 +5,11 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { getMailClient } from "../lib/mail";
 import nodemailer from "nodemailer";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+import "dayjs/locale/pt-br";
+
+dayjs.extend(localizedFormat)
+dayjs.locale('pt-br')
 
 export async function createTrip(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().post('/trips', {
@@ -52,6 +57,11 @@ export async function createTrip(app: FastifyInstance) {
             }
         })
 
+        const formatedStartDate = dayjs(starts_at).format('LL')
+        const formatedEndDate = dayjs(ends_at).format('LL')
+
+        const confirmationLink = `http://localhost:3333/trips/${trip.id}/confirm`
+
         const mail = await getMailClient()
 
         const message = await mail.sendMail({
@@ -64,8 +74,29 @@ export async function createTrip(app: FastifyInstance) {
                 name: owner_name,
                 address: owner_email,
             },
-            subject: 'Testing...',
-            html: `<p>Testando o envio!</p>`
+            subject: `Confirme sua viagem para ${destination} em ${formatedStartDate}`,
+            html: `
+            <div style="font-family: sans-serif; font-size: 16px; line-height: 1.6;">
+                <p>Você solicitou a criação de uma viagem para <strong>${destination}</strong> nas datas de <strong>${formatedStartDate}</strong> até <strong>${formatedEndDate}</strong>.</p>
+                <p></p>
+                <p>Para confirmar sua viagem, clique no link abaixo:</p>
+                <p></p>
+                <p>
+                    <a href="${confirmationLink}">Confirmar viagem</a>
+                </p>
+                <p></p>
+                <p>Caso esteja usando o dispositivo móvel, você também pode confirmar a criação da viagem pelos aplicativos:</p>
+                <p></p>
+                    <p>
+                        <a href="">Aplicativo para iPhone</a>
+                    </p>
+                    <p>
+                        <a href="">Aplicativo para Android</a>
+                    </p>
+                <p></p>
+                <p>Caso você não saiba do que se trata esse e-mail, apenas ignore esse e-mail.</p>
+            </div>
+            `.trim()
         })
 
         console.log(nodemailer.getTestMessageUrl(message))
