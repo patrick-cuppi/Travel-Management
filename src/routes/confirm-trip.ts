@@ -6,7 +6,6 @@ import { dayjs } from "../lib/dayjs";
 import { getMailClient } from "../lib/mail";
 import nodemailer from "nodemailer";
 
-
 export async function confirmTrip(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().get('/trips/:tripId/confirm', {
         schema: {
@@ -56,7 +55,7 @@ export async function confirmTrip(app: FastifyInstance) {
 
         await Promise.all(
             trip.participants.map(async (participant) => {
-                const confirmationLink = `http://localhost:3333/trips/${trip.id}/confirm/${participant.id}`
+                const confirmationLink = `http://localhost:3333/participants/${participant.id}/confirm`
 
                 const message = await mail.sendMail({
                     from: {
