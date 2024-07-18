@@ -36,3 +36,4 @@ E-mail de teste aberto através da URL indicada na imagem acima.
 - Zod
 - Prisma ORM
 - SQLite
+- Postman (Client HTTP)
